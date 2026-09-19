@@ -4,6 +4,9 @@ import { readFile } from 'node:fs/promises';
 import { investigate, scenarios } from './src/incident.mjs';
 import { createVoiceToken } from './src/providers/assemblyai.mjs';
 import { readJson, sendJson } from './src/http.mjs';
+import { DemoAccess, clientId, sessionId } from './src/demo-access.mjs';
+
+export const demoAccess = new DemoAccess();
 
 const publicFiles = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
@@ -16,6 +19,12 @@ export const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (req.method === 'GET' && url.pathname === '/healthz') return sendJson(res, 200, { status: 'ok' });
   if (req.method === 'GET' && url.pathname === '/api/scenarios') return sendJson(res, 200, Object.keys(scenarios));
+  if (req.method === 'POST' && url.pathname === '/api/demo-sessions') {
+    try {
+      const session = demoAccess.createSession(clientId(req));
+      return sendJson(res, 201, { sessionId: session.id, expiresAt: new Date(session.expiresAt).toISOString() });
+    } catch (error) { return sendJson(res, error.status || 500, { error: error.message }); }
+  }
   if (url.pathname === '/api/incident') {
     if (req.method !== 'GET') return sendJson(res, 405, { error: 'Method not allowed' });
     try { return sendJson(res, 200, investigate(url.searchParams.get('scenario'))); }
@@ -23,16 +32,28 @@ export const server = http.createServer(async (req, res) => {
   }
   if (req.method === 'POST' && url.pathname === '/api/investigations') {
     try {
+      const session = demoAccess.requireSession(sessionId(req), clientId(req));
+      demoAccess.rateLimit(`investigation:${clientId(req)}`, 30);
       const body = await readJson(req);
       if (body.service !== 'nginx' || !Object.hasOwn(scenarios, body.scenario)) return sendJson(res, 400, { error: 'Only the allowed nginx fixture scenarios are supported' });
-      return sendJson(res, 200, investigate(body.scenario));
+      const cached = demoAccess.cachedCall(session, body.callId);
+      if (cached) return sendJson(res, 200, cached);
+      const report = investigate(body.scenario);
+      demoAccess.rememberCall(session, body.callId, report);
+      return sendJson(res, 200, report);
     } catch (error) { return sendJson(res, error.status || 400, { error: error.message }); }
   }
   if (req.method === 'POST' && url.pathname === '/api/voice-token') {
     try {
+      if (process.env.VOICE_DEMO_ENABLED === 'false') return sendJson(res, 503, { error: 'Voice mode is temporarily disabled. Use text mode.' });
+      demoAccess.acquireVoice(sessionId(req), clientId(req), {
+        maxConcurrent: Number(process.env.VOICE_MAX_CONCURRENT || 2),
+        dailyLimit: Number(process.env.VOICE_DAILY_TOKEN_LIMIT || 50)
+      });
       const token = await createVoiceToken({ apiKey: process.env.ASSEMBLYAI_API_KEY });
       return sendJson(res, 200, { token, expiresInSeconds: 60, maxSessionDurationSeconds: 180 });
-    } catch {
+    } catch (error) {
+      if (error.status) return sendJson(res, error.status, { error: error.message });
       const missing = !process.env.ASSEMBLYAI_API_KEY;
       return sendJson(res, missing ? 503 : 502, { error: missing ? 'Voice is not configured. Use text mode or configure the server key.' : 'Voice provider is unavailable.' });
     }

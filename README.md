@@ -32,7 +32,7 @@ The public demo uses synthetic fixtures. Loki is an optional later adapter and c
 ## Next milestones
 
 1. Run a live provider spike and verify the event contract, tool roundtrip, transcript, audio response, and clean `session.end`.
-2. Add session ownership, rate limits, concurrency limits, and a global spending guard.
+2. Verify the demo-session, rate, concurrency, daily-budget, and kill-switch controls in the hosted environment.
 3. Run the five real-agent scenarios three times each and preserve the evaluation results.
 4. Deploy an HTTPS fixture demo, then prepare the public repository, video, pitch deck, and cover image.
 
