@@ -16,7 +16,7 @@ export class DemoAccess {
   prune() {
     const now = this.now();
     for (const [id, session] of this.sessions) if (session.expiresAt <= now) this.sessions.delete(id);
-    for (const [id, expiresAt] of this.voiceLeases) if (expiresAt <= now) this.voiceLeases.delete(id);
+    for (const [id, lease] of this.voiceLeases) if (lease.expiresAt <= now) this.voiceLeases.delete(id);
     this.dailyTokens = this.dailyTokens.filter(timestamp => timestamp > now - day);
     for (const [client, timestamps] of this.clients) {
       const current = timestamps.filter(timestamp => timestamp > now - minute);
@@ -48,15 +48,33 @@ export class DemoAccess {
     return session;
   }
 
-  acquireVoice(sessionId, client, { maxConcurrent = 2, dailyLimit = 50, durationMs = 180_000 } = {}) {
+  reserveVoice(sessionId, client, { maxConcurrent = 2, dailyLimit = 50, durationMs = 180_000 } = {}) {
     const session = this.requireSession(sessionId, client);
     this.rateLimit(`voice:${client}`, 3);
     if (this.voiceLeases.size >= maxConcurrent && !this.voiceLeases.has(sessionId)) throw accessError(429, 'The demo voice capacity is currently full. Use text mode or try again shortly.');
     if (this.dailyTokens.length >= dailyLimit) throw accessError(429, 'The demo voice budget has been reached for today. Use text mode.');
     const expiresAt = this.now() + durationMs;
-    this.voiceLeases.set(sessionId, expiresAt);
-    this.dailyTokens.push(this.now());
+    this.voiceLeases.set(sessionId, { expiresAt, committed: false });
     session.voiceExpiresAt = expiresAt;
+    return { expiresAt };
+  }
+
+  commitVoice(sessionId) {
+    const lease = this.voiceLeases.get(sessionId);
+    if (!lease || lease.committed) return;
+    lease.committed = true;
+    this.dailyTokens.push(this.now());
+  }
+
+  acquireVoice(sessionId, client, options) {
+    const lease = this.reserveVoice(sessionId, client, options);
+    this.commitVoice(sessionId);
+    return lease;
+  }
+
+  releaseVoice(sessionId, client) {
+    this.requireSession(sessionId, client);
+    return this.voiceLeases.delete(sessionId);
   }
 
   cachedCall(session, callId) { return callId ? session.calls.get(callId) : undefined; }

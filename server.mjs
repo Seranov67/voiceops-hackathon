@@ -44,19 +44,30 @@ export const server = http.createServer(async (req, res) => {
     } catch (error) { return sendJson(res, error.status || 400, { error: error.message }); }
   }
   if (req.method === 'POST' && url.pathname === '/api/voice-token') {
+    const currentSessionId = sessionId(req);
     try {
       if (process.env.VOICE_DEMO_ENABLED === 'false') return sendJson(res, 503, { error: 'Voice mode is temporarily disabled. Use text mode.' });
-      demoAccess.acquireVoice(sessionId(req), clientId(req), {
+      demoAccess.reserveVoice(currentSessionId, clientId(req), {
         maxConcurrent: Number(process.env.VOICE_MAX_CONCURRENT || 2),
         dailyLimit: Number(process.env.VOICE_DAILY_TOKEN_LIMIT || 50)
       });
       const token = await createVoiceToken({ apiKey: process.env.ASSEMBLYAI_API_KEY });
+      demoAccess.commitVoice(currentSessionId);
       return sendJson(res, 200, { token, expiresInSeconds: 60, maxSessionDurationSeconds: 180 });
     } catch (error) {
+      if (currentSessionId) {
+        try { demoAccess.releaseVoice(currentSessionId, clientId(req)); } catch {}
+      }
       if (error.status) return sendJson(res, error.status, { error: error.message });
       const missing = !process.env.ASSEMBLYAI_API_KEY;
       return sendJson(res, missing ? 503 : 502, { error: missing ? 'Voice is not configured. Use text mode or configure the server key.' : 'Voice provider is unavailable.' });
     }
+  }
+  if (req.method === 'DELETE' && url.pathname === '/api/voice-lease') {
+    try {
+      const released = demoAccess.releaseVoice(sessionId(req), clientId(req));
+      return sendJson(res, 200, { released });
+    } catch (error) { return sendJson(res, error.status || 400, { error: error.message }); }
   }
   const publicFile = publicFiles.get(url.pathname);
   if (req.method !== 'GET' || !publicFile) return sendJson(res, 404, { error: 'Not found' });

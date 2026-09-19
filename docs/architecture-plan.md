@@ -113,7 +113,7 @@ The provenance validator retrieves authoritative records independently by `runId
 | POST | `/api/voice-token` | Single-use provider token |
 | GET | `/api/incident` | Legacy fixture endpoint; remove after migration |
 
-The API includes demo-session creation, client ownership checks, call-ID deduplication, rate limits, voice concurrency leases, a daily token budget, and a kill switch. Report retrieval by run ID and explicit voice-lease disposal remain future work. The in-memory design supports one application instance; restart invalidates temporary state.
+The API includes demo-session creation, client ownership checks, call-ID deduplication, rate limits, voice concurrency leases with explicit disposal, a daily token budget, and a kill switch. Report retrieval by run ID remains future work. The in-memory design supports one application instance; restart invalidates temporary state.
 
 ## 8. Security, privacy, and spending
 
@@ -206,5 +206,5 @@ Estimated effort for one developer: 35–50 focused engineering hours plus 7–1
 ## 14. Immediate next actions
 
 1. Add the API key locally through `.env` and run the live provider spike without exposing the key.
-2. Add explicit voice-lease disposal and structured request telemetry without sensitive content.
+2. Add structured request telemetry without sensitive content and report retrieval by run ID.
 3. Preserve the first successful nginx connection-refused voice run as an evaluation artifact.
