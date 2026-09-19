@@ -205,6 +205,6 @@ Estimated effort for one developer: 35–50 focused engineering hours plus 7–1
 
 ## 14. Immediate next actions
 
-1. Capture canonical validation results for two additional connection-refused runs.
-2. Complete two more upstream-timeout runs, then execute the remaining three live scenarios three times each.
+1. Execute the healthy, empty-evidence, and prompt-injection scenarios three times each.
+2. Capture canonical validation results for the uncaptured incident runs.
 3. Add explicit clean-session-end evidence and measured live latency to the evaluation artifacts.
