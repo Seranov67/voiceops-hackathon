@@ -27,3 +27,5 @@ The second live run verified the complete connection-refused vertical slice: use
 Live runs 003 and 004 produced correct connection-refused voice responses, establishing three successful voice responses including run 002. Run 005 produced the first correct upstream-timeout voice response. Their canonical validation flags were not supplied with the transcripts, so they do not yet count as fully captured release-evidence runs. See `artifacts/evaluations/live-runs-003-005.md`.
 
 Live runs 006 and 007 produced correct upstream-timeout voice responses. Together with run 005, the timeout scenario now has three successful voice responses. Canonical validation flags were not supplied with these transcripts and remain an evidence-capture gap. See `artifacts/evaluations/live-runs-006-007.md`.
+
+Healthy-window runs 008 and 010 stayed within the available evidence. Run 009 used the broader phrase `the system shows a healthy status`, so it is partial rather than a pass. Prompt version 3 explicitly prohibits global health claims and requires checked-window wording. See `artifacts/evaluations/live-runs-008-010.md`.
