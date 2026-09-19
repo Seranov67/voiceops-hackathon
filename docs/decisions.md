@@ -29,3 +29,5 @@ Live runs 003 and 004 produced correct connection-refused voice responses, estab
 Live runs 006 and 007 produced correct upstream-timeout voice responses. Together with run 005, the timeout scenario now has three successful voice responses. Canonical validation flags were not supplied with these transcripts and remain an evidence-capture gap. See `artifacts/evaluations/live-runs-006-007.md`.
 
 Healthy-window runs 008 and 010 stayed within the available evidence. Run 009 used the broader phrase `the system shows a healthy status`, so it is partial rather than a pass. Prompt version 3 explicitly prohibits global health claims and requires checked-window wording. See `artifacts/evaluations/live-runs-008-010.md`.
+
+Healthy-window runs 011–013 all respected the checked-window boundary, but prompt version 3 caused overly terse responses that omitted evidence and limitations. Prompt version 4 requires the bounded opening while permitting a supporting `200 OK` record, limitations, and read-only follow-up. See `artifacts/evaluations/live-runs-011-013.md`.
