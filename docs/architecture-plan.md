@@ -205,6 +205,6 @@ Estimated effort for one developer: 35–50 focused engineering hours plus 7–1
 
 ## 14. Immediate next actions
 
-1. Repeat the connection-refused live run twice to establish three consecutive passes.
-2. Execute the remaining four live scenarios three times each.
+1. Capture canonical validation results for two additional connection-refused runs.
+2. Complete two more upstream-timeout runs, then execute the remaining three live scenarios three times each.
 3. Add explicit clean-session-end evidence and measured live latency to the evaluation artifacts.
