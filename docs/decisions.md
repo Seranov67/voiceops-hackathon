@@ -21,3 +21,5 @@ Open verification: run one real session, confirm event fields, selected voice id
 # Live prompt evaluation
 
 The first real voice run on September 19, 2026 verified token issuance, microphone transcription, and agent audio, but failed to invoke the diagnostic tool after an ambiguously worded request. Prompt version 2 now treats any mention of nginx 502 errors as an immediate investigation request and forbids confirmation loops. See `artifacts/evaluations/live-run-001.md`.
+
+The second live run verified the complete connection-refused vertical slice: user speech, transcript, required tool call, exact server-owned evidence, all three report validations, canonical browser report, and a bounded spoken explanation. This is one successful run, not the full 15-run release evaluation. See `artifacts/evaluations/live-run-002.md`.
