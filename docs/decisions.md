@@ -18,3 +18,6 @@ Sources checked 2026-09-19:
 - https://www.assemblyai.com/docs/voice-agents/voice-agent-api/tools/client-side-tools
 
 Open verification: run one real session, confirm event fields, selected voice id, transcript events, tool ordering and clean `session.ended`. Do not mark P0-1 complete before this.
+# Live prompt evaluation
+
+The first real voice run on September 19, 2026 verified token issuance, microphone transcription, and agent audio, but failed to invoke the diagnostic tool after an ambiguously worded request. Prompt version 2 now treats any mention of nginx 502 errors as an immediate investigation request and forbids confirmation loops. See `artifacts/evaluations/live-run-001.md`.
