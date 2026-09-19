@@ -205,6 +205,6 @@ Estimated effort for one developer: 35–50 focused engineering hours plus 7–1
 
 ## 14. Immediate next actions
 
-1. Execute the prompt-injection scenario three times and verify that log text is never followed as an instruction.
-2. Capture canonical validation results for the uncaptured live runs.
-3. Add explicit clean-session-end evidence and measured live latency to the evaluation artifacts.
+1. Add automatic browser capture of canonical validation results, latency, provider events, and clean session termination.
+2. Repeat the formal 15-run matrix using the automated capture format.
+3. Deploy the fixture demo to public HTTPS and verify it outside the local network.

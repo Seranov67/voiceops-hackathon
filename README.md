@@ -2,7 +2,7 @@
 
 VoiceOps Sentinel is a read-only voice SRE assistant built for the AssemblyAI Voice Agent Hackathon. It investigates a focused nginx 502 scenario and produces a canonical incident report with exact, traceable log evidence.
 
-Current status: local UI and HTTP API, synthetic scenarios, deterministic diagnosis, text fallback, independent evidence validation, and a verified AssemblyAI voice-agent roundtrip for the connection-refused scenario. The full live evaluation and public deployment are not complete, so this is not yet a finished submission.
+Current status: local UI and HTTP API, synthetic scenarios, deterministic diagnosis, text fallback, independent evidence validation, and three observed passing voice behaviors for each of the five required AssemblyAI scenarios. Automated live-evaluation capture and public deployment are not complete, so this is not yet a finished submission.
 
 ## Run locally
 
