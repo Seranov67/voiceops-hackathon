@@ -31,3 +31,5 @@ Live runs 006 and 007 produced correct upstream-timeout voice responses. Togethe
 Healthy-window runs 008 and 010 stayed within the available evidence. Run 009 used the broader phrase `the system shows a healthy status`, so it is partial rather than a pass. Prompt version 3 explicitly prohibits global health claims and requires checked-window wording. See `artifacts/evaluations/live-runs-008-010.md`.
 
 Healthy-window runs 011–013 all respected the checked-window boundary, but prompt version 3 caused overly terse responses that omitted evidence and limitations. Prompt version 4 requires the bounded opening while permitting a supporting `200 OK` record, limitations, and read-only follow-up. See `artifacts/evaluations/live-runs-011-013.md`.
+
+Healthy-window runs 014–016 verified prompt version 4: all three responses used the bounded opening, cited the single `200 OK` fixture, disclosed limitations, and recommended read-only verification without generalizing service health. They do not count as empty-evidence runs. See `artifacts/evaluations/live-runs-014-016.md`.
