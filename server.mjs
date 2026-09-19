@@ -6,6 +6,7 @@ import { investigate, scenarios } from './src/incident.mjs';
 import { createVoiceToken } from './src/providers/assemblyai.mjs';
 import { readJson, sendJson } from './src/http.mjs';
 import { DemoAccess, clientId, sessionId } from './src/demo-access.mjs';
+import { sanitizeEvaluation } from './src/evaluations.mjs';
 
 export const demoAccess = new DemoAccess();
 
@@ -85,6 +86,15 @@ export const server = http.createServer(async (req, res) => {
     try {
       const released = demoAccess.releaseVoice(sessionId(req), clientId(req));
       return sendJson(res, 200, { released });
+    } catch (error) { return sendJson(res, error.status || 400, { error: error.message }); }
+  }
+  if (url.pathname === '/api/evaluations' && (req.method === 'POST' || req.method === 'GET')) {
+    try {
+      const session = demoAccess.requireSession(sessionId(req), clientId(req));
+      if (req.method === 'GET') return sendJson(res, 200, { evaluations: demoAccess.getEvaluations(session) });
+      const evaluation = sanitizeEvaluation(await readJson(req, 65_536));
+      demoAccess.rememberEvaluation(session, evaluation);
+      return sendJson(res, 201, evaluation);
     } catch (error) { return sendJson(res, error.status || 400, { error: error.message }); }
   }
   const publicFile = publicFiles.get(url.pathname);

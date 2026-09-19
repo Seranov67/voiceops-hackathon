@@ -15,7 +15,7 @@ The first release is an English browser demo using synthetic data, one service (
 | Component | Current state | Remaining limitation |
 |---|---|---|
 | Node.js server | Working | In-memory public-demo controls require a single application instance |
-| Browser UI | Voice controls, transcript, text fallback, report card | One complete live connection-refused roundtrip verified |
+| Browser UI | Voice controls, transcript, text fallback, report card, evaluation capture and export | Formal automatically captured 15-run matrix remains |
 | Fixtures | Five required cases plus a mixed-signal case | Synthetic only |
 | Incident service | Deterministic classification across all records | Narrow nginx taxonomy by design |
 | Evidence store | Server-generated run ID and bounded in-memory copies | Single process, no persistence |

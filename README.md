@@ -32,6 +32,8 @@ The public demo uses synthetic fixtures. Loki is an optional later adapter and c
 
 `npm run evaluate` executes the five deterministic fixture scenarios three times each and writes the evidence-preserving baseline to `artifacts/evaluations/fixture-baseline.json`. This baseline does not represent a live AssemblyAI evaluation.
 
+Every completed browser voice session creates a sanitized live-evaluation record with provider-event counts, transcript, tool latency, canonical validation flags, and clean-end status. Use **Export JSON** before restarting the single-process demo; live captures are intentionally session-owned and in-memory.
+
 ## Next milestones
 
 1. Run a live provider spike and verify the event contract, tool roundtrip, transcript, audio response, and clean `session.end`.

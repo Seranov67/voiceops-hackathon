@@ -36,7 +36,7 @@ export class DemoAccess {
     this.rateLimit(client, 10);
     const id = randomUUID();
     const expiresAt = this.now() + this.sessionTtlMs;
-    this.sessions.set(id, { client, expiresAt, calls: new Map(), reports: new Map() });
+    this.sessions.set(id, { client, expiresAt, calls: new Map(), reports: new Map(), evaluations: new Map() });
     return { id, expiresAt };
   }
 
@@ -94,6 +94,13 @@ export class DemoAccess {
     const report = session.reports.get(runId);
     return report ? structuredClone(report) : null;
   }
+
+  rememberEvaluation(session, evaluation) {
+    if (session.evaluations.size >= 20) session.evaluations.delete(session.evaluations.keys().next().value);
+    session.evaluations.set(evaluation.evaluationId, structuredClone(evaluation));
+  }
+
+  getEvaluations(session) { return structuredClone([...session.evaluations.values()]); }
 }
 
 export function clientId(req) { return req.socket.remoteAddress || 'unknown'; }
