@@ -1,0 +1,51 @@
+import http from 'node:http';
+import { pathToFileURL } from 'node:url';
+import { readFile } from 'node:fs/promises';
+import { investigate, scenarios } from './src/incident.mjs';
+import { createVoiceToken } from './src/providers/assemblyai.mjs';
+import { readJson, sendJson } from './src/http.mjs';
+
+const publicFiles = new Map([
+  ['/', ['index.html', 'text/html; charset=utf-8']],
+  ['/app.js', ['app.js', 'text/javascript; charset=utf-8']],
+  ['/styles.css', ['styles.css', 'text/css; charset=utf-8']],
+  ['/audio-worklet.js', ['audio-worklet.js', 'text/javascript; charset=utf-8']]
+]);
+
+export const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://localhost');
+  if (req.method === 'GET' && url.pathname === '/healthz') return sendJson(res, 200, { status: 'ok' });
+  if (req.method === 'GET' && url.pathname === '/api/scenarios') return sendJson(res, 200, Object.keys(scenarios));
+  if (url.pathname === '/api/incident') {
+    if (req.method !== 'GET') return sendJson(res, 405, { error: 'Method not allowed' });
+    try { return sendJson(res, 200, investigate(url.searchParams.get('scenario'))); }
+    catch { return sendJson(res, 400, { error: 'Unknown scenario' }); }
+  }
+  if (req.method === 'POST' && url.pathname === '/api/investigations') {
+    try {
+      const body = await readJson(req);
+      if (body.service !== 'nginx' || !Object.hasOwn(scenarios, body.scenario)) return sendJson(res, 400, { error: 'Only the allowed nginx fixture scenarios are supported' });
+      return sendJson(res, 200, investigate(body.scenario));
+    } catch (error) { return sendJson(res, error.status || 400, { error: error.message }); }
+  }
+  if (req.method === 'POST' && url.pathname === '/api/voice-token') {
+    try {
+      const token = await createVoiceToken({ apiKey: process.env.ASSEMBLYAI_API_KEY });
+      return sendJson(res, 200, { token, expiresInSeconds: 60, maxSessionDurationSeconds: 180 });
+    } catch {
+      const missing = !process.env.ASSEMBLYAI_API_KEY;
+      return sendJson(res, missing ? 503 : 502, { error: missing ? 'Voice is not configured. Use text mode or configure the server key.' : 'Voice provider is unavailable.' });
+    }
+  }
+  const publicFile = publicFiles.get(url.pathname);
+  if (req.method !== 'GET' || !publicFile) return sendJson(res, 404, { error: 'Not found' });
+  try {
+    const file = await readFile(new URL(`./public/${publicFile[0]}`, import.meta.url));
+    res.writeHead(200, { 'Content-Type': publicFile[1], 'X-Content-Type-Options': 'nosniff' }); res.end(file);
+  } catch { sendJson(res, 500, { error: 'Unable to load interface' }); }
+});
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try { process.loadEnvFile(); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  server.listen(Number(process.env.PORT || 3000), '127.0.0.1', () => console.log('VoiceOps: http://127.0.0.1:3000'));
+}

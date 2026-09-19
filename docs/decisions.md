@@ -1,0 +1,20 @@
+# Architecture decisions
+
+## ADR-001 — Voice Agent API browser transport
+
+Status: implemented, live provider verification pending.
+
+The browser asks VoiceOps for `POST /api/voice-token`. VoiceOps calls AssemblyAI `GET https://agents.assemblyai.com/v1/token` with the long-lived API key in the Bearer header. The browser receives only the single-use temporary token. Redemption TTL is 60 seconds and the voice session is capped at 180 seconds.
+
+The browser connects to `wss://agents.assemblyai.com/v1/ws?token=...` and sends an inline `session.update`. The only exposed function tool is `investigate_nginx`; its service argument is restricted to `nginx`. A `tool.call` is translated to VoiceOps `POST /api/investigations`; the server chooses the fixture scenario from UI state and produces the canonical report. The result is sent as `tool.result` only when `reply.done` is the latest relevant event, following the provider protocol.
+
+This browser relay is accepted for the synthetic prototype. It does not make the browser an authority: the backend rejects unknown services and scenarios and constructs the report. Before public hosting, add server session ownership, quota and call deduplication described in the architecture plan.
+
+Audio uses the device-rate `AudioContext`, resamples microphone input to 24 kHz PCM16 in an AudioWorklet, enables browser echo cancellation and disables browser noise suppression. The explicit Stop action sends `session.end`; `pagehide` also sends it synchronously. This avoids leaving the provider's billable resume window open after a normal exit.
+
+Sources checked 2026-09-19:
+
+- https://www.assemblyai.com/docs/voice-agents/voice-agent-api/browser-integration
+- https://www.assemblyai.com/docs/voice-agents/voice-agent-api/tools/client-side-tools
+
+Open verification: run one real session, confirm event fields, selected voice id, transcript events, tool ordering and clean `session.ended`. Do not mark P0-1 complete before this.
