@@ -21,7 +21,7 @@ The first release is an English browser demo using synthetic data, one service (
 | Evidence store | Server-generated run ID and bounded in-memory copies | Single process, no persistence |
 | Validators | Schema, provenance, and diagnostic policy | No session ownership yet |
 | AssemblyAI adapter | Bounded temporary-token endpoint and verified browser WebSocket roundtrip | Broader live scenario evaluation remains |
-| Tests | Automated unit and HTTP coverage plus a 15-run fixture baseline | No live-provider or browser automation test |
+| Tests | Automated unit and HTTP coverage, 15-run fixture baseline, and 15/15 captured live voice matrix | No automated microphone/browser driver |
 | Git | Local repository on `voiceops-hackathon` | No commit or remote yet |
 | lablab.ai | Team and saved submission draft | Project assets and final submission missing |
 
@@ -205,6 +205,6 @@ Estimated effort for one developer: 35–50 focused engineering hours plus 7–1
 
 ## 14. Immediate next actions
 
-1. Add automatic browser capture of canonical validation results, latency, provider events, and clean session termination.
-2. Repeat the formal 15-run matrix using the automated capture format.
-3. Deploy the fixture demo to public HTTPS and verify it outside the local network.
+1. Deploy the fixture demo to public HTTPS with the existing budget and concurrency controls.
+2. Verify microphone, clean end, and export outside the local network.
+3. Prepare the demo video, pitch deck, cover image, and final submission review.

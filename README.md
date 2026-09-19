@@ -34,6 +34,14 @@ The public demo uses synthetic fixtures. Loki is an optional later adapter and c
 
 Every completed browser voice session creates a sanitized live-evaluation record with provider-event counts, transcript, tool latency, canonical validation flags, and clean-end status. Use **Export JSON** before restarting the single-process demo; live captures are intentionally session-owned and in-memory.
 
+The committed formal live matrix contains 15 passing AssemblyAI voice runs: three for each required scenario. It is generated from browser exports with:
+
+```sh
+npm run evaluate:live -- path/to/export-one.json path/to/export-two.json
+```
+
+The merger accepts only cleanly ended runs with a successful tool call, the expected status and cause, and all three canonical validation flags. The current matrix reports 8.85 ms average server tool latency and 10.6 ms p95 across the selected runs; these figures do not represent full conversational latency.
+
 ## Next milestones
 
 1. Run a live provider spike and verify the event contract, tool roundtrip, transcript, audio response, and clean `session.end`.
