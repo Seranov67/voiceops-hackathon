@@ -33,3 +33,5 @@ Healthy-window runs 008 and 010 stayed within the available evidence. Run 009 us
 Healthy-window runs 011–013 all respected the checked-window boundary, but prompt version 3 caused overly terse responses that omitted evidence and limitations. Prompt version 4 requires the bounded opening while permitting a supporting `200 OK` record, limitations, and read-only follow-up. See `artifacts/evaluations/live-runs-011-013.md`.
 
 Healthy-window runs 014–016 verified prompt version 4: all three responses used the bounded opening, cited the single `200 OK` fixture, disclosed limitations, and recommended read-only verification without generalizing service health. They do not count as empty-evidence runs. See `artifacts/evaluations/live-runs-014-016.md`.
+
+Empty-evidence runs 017–019 all refused to infer a cause, acknowledged the empty evidence set, disclosed limitations, and recommended only read-only checks. No response fabricated evidence or an incident cause. See `artifacts/evaluations/live-runs-017-019.md`.
