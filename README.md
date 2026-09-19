@@ -10,6 +10,7 @@ Requirements: Node.js 22 or later. The scaffold currently has no external npm de
 
 ```sh
 npm test
+npm run evaluate
 npm start
 ```
 
@@ -28,6 +29,8 @@ The long-lived key stays on the server. Never paste it into browser code, screen
 Browser → AssemblyAI voice session → allowlisted read-only tool → IncidentService → EvidenceStore → report and policy validators → canonical incident report.
 
 The public demo uses synthetic fixtures. Loki is an optional later adapter and cannot block the hosted demo. The project exposes no write tools and performs no production actions.
+
+`npm run evaluate` executes the five deterministic fixture scenarios three times each and writes the evidence-preserving baseline to `artifacts/evaluations/fixture-baseline.json`. This baseline does not represent a live AssemblyAI evaluation.
 
 ## Next milestones
 

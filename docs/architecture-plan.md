@@ -21,7 +21,7 @@ The first release is an English browser demo using synthetic data, one service (
 | Evidence store | Server-generated run ID and bounded in-memory copies | Single process, no persistence |
 | Validators | Schema, provenance, and diagnostic policy | No session ownership yet |
 | AssemblyAI adapter | Bounded temporary-token endpoint and browser WebSocket | Requires local key and live test |
-| Tests | 12 passing | No live-provider or browser automation test |
+| Tests | Automated unit and HTTP coverage plus a 15-run fixture baseline | No live-provider or browser automation test |
 | Git | Local repository on `voiceops-hackathon` | No commit or remote yet |
 | lablab.ai | Team and saved submission draft | Project assets and final submission missing |
 
@@ -206,5 +206,5 @@ Estimated effort for one developer: 35–50 focused engineering hours plus 7–1
 ## 14. Immediate next actions
 
 1. Add the API key locally through `.env` and run the live provider spike without exposing the key.
-2. Add structured request telemetry without sensitive content and report retrieval by run ID.
-3. Preserve the first successful nginx connection-refused voice run as an evaluation artifact.
+2. Preserve the first successful nginx connection-refused voice run as an evaluation artifact.
+3. Extend the evaluation artifact format with live transcript and provider event outcomes.

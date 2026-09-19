@@ -36,7 +36,7 @@ export class DemoAccess {
     this.rateLimit(client, 10);
     const id = randomUUID();
     const expiresAt = this.now() + this.sessionTtlMs;
-    this.sessions.set(id, { client, expiresAt, calls: new Map() });
+    this.sessions.set(id, { client, expiresAt, calls: new Map(), reports: new Map() });
     return { id, expiresAt };
   }
 
@@ -83,6 +83,16 @@ export class DemoAccess {
     if (!callId) return;
     if (session.calls.size >= 20) session.calls.delete(session.calls.keys().next().value);
     session.calls.set(callId, result);
+  }
+
+  rememberReport(session, report) {
+    if (session.reports.size >= 20) session.reports.delete(session.reports.keys().next().value);
+    session.reports.set(report.runId, structuredClone(report));
+  }
+
+  getReport(session, runId) {
+    const report = session.reports.get(runId);
+    return report ? structuredClone(report) : null;
   }
 }
 

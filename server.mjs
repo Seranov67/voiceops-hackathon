@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { pathToFileURL } from 'node:url';
 import { readFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { investigate, scenarios } from './src/incident.mjs';
 import { createVoiceToken } from './src/providers/assemblyai.mjs';
 import { readJson, sendJson } from './src/http.mjs';
@@ -16,6 +17,13 @@ const publicFiles = new Map([
 ]);
 
 export const server = http.createServer(async (req, res) => {
+  const requestId = randomUUID();
+  const startedAt = performance.now();
+  res.setHeader('X-Request-Id', requestId);
+  res.once('finish', () => {
+    if (process.env.REQUEST_LOG_ENABLED === 'false') return;
+    console.log(JSON.stringify({ event: 'http_request', requestId, method: req.method, path: new URL(req.url, 'http://localhost').pathname, status: res.statusCode, durationMs: Number((performance.now() - startedAt).toFixed(1)) }));
+  });
   const url = new URL(req.url, 'http://localhost');
   if (req.method === 'GET' && url.pathname === '/healthz') return sendJson(res, 200, { status: 'ok' });
   if (req.method === 'GET' && url.pathname === '/api/scenarios') return sendJson(res, 200, Object.keys(scenarios));
@@ -40,7 +48,17 @@ export const server = http.createServer(async (req, res) => {
       if (cached) return sendJson(res, 200, cached);
       const report = investigate(body.scenario);
       demoAccess.rememberCall(session, body.callId, report);
+      demoAccess.rememberReport(session, report);
       return sendJson(res, 200, report);
+    } catch (error) { return sendJson(res, error.status || 400, { error: error.message }); }
+  }
+  if (req.method === 'GET' && url.pathname.startsWith('/api/reports/')) {
+    try {
+      const session = demoAccess.requireSession(sessionId(req), clientId(req));
+      const runId = decodeURIComponent(url.pathname.slice('/api/reports/'.length));
+      if (!/^[0-9a-f-]{36}$/i.test(runId)) return sendJson(res, 400, { error: 'Invalid run ID' });
+      const report = demoAccess.getReport(session, runId);
+      return report ? sendJson(res, 200, report) : sendJson(res, 404, { error: 'Report not found in this demo session' });
     } catch (error) { return sendJson(res, error.status || 400, { error: error.message }); }
   }
   if (req.method === 'POST' && url.pathname === '/api/voice-token') {
