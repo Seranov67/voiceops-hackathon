@@ -48,32 +48,39 @@ export class DemoAccess {
     return session;
   }
 
-  reserveVoice(sessionId, client, { maxConcurrent = 2, dailyLimit = 50, durationMs = 180_000 } = {}) {
+  reserveVoice(sessionId, client, { maxConcurrent = 2, dailyLimit = 50, durationMs = 240_000 } = {}) {
     const session = this.requireSession(sessionId, client);
+    if (!Number.isInteger(maxConcurrent) || maxConcurrent < 1 || !Number.isInteger(dailyLimit) || dailyLimit < 1) throw accessError(503, 'Voice limits are not configured correctly.');
     this.rateLimit(`voice:${client}`, 3);
-    if (this.voiceLeases.size >= maxConcurrent && !this.voiceLeases.has(sessionId)) throw accessError(429, 'The demo voice capacity is currently full. Use text mode or try again shortly.');
-    if (this.dailyTokens.length >= dailyLimit) throw accessError(429, 'The demo voice budget has been reached for today. Use text mode.');
+    if (this.voiceLeases.has(sessionId)) throw accessError(409, 'This demo session already has an active voice reservation.');
+    if (this.voiceLeases.size >= maxConcurrent) throw accessError(429, 'The demo voice capacity is currently full. Use text mode or try again shortly.');
+    const pending = [...this.voiceLeases.values()].filter(lease => !lease.committed).length;
+    if (this.dailyTokens.length + pending >= dailyLimit) throw accessError(429, 'The demo voice budget has been reached for today. Use text mode.');
     const expiresAt = this.now() + durationMs;
-    this.voiceLeases.set(sessionId, { expiresAt, committed: false });
+    const id = randomUUID();
+    this.voiceLeases.set(sessionId, { id, expiresAt, committed: false });
     session.voiceExpiresAt = expiresAt;
-    return { expiresAt };
+    return { id, expiresAt };
   }
 
-  commitVoice(sessionId) {
+  commitVoice(sessionId, reservationId) {
     const lease = this.voiceLeases.get(sessionId);
-    if (!lease || lease.committed) return;
+    if (!lease || (reservationId && lease.id !== reservationId) || lease.committed) return;
     lease.committed = true;
     this.dailyTokens.push(this.now());
   }
 
   acquireVoice(sessionId, client, options) {
     const lease = this.reserveVoice(sessionId, client, options);
-    this.commitVoice(sessionId);
+    this.commitVoice(sessionId, lease.id);
     return lease;
   }
 
-  releaseVoice(sessionId, client) {
+  releaseVoice(sessionId, client, reservationId) {
     this.requireSession(sessionId, client);
+    if (reservationId && this.voiceLeases.get(sessionId)?.id !== reservationId) return false;
+    // Only the issuing request may roll back an in-flight token reservation.
+    if (!reservationId && this.voiceLeases.get(sessionId)?.committed === false) return false;
     return this.voiceLeases.delete(sessionId);
   }
 

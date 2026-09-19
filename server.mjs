@@ -21,11 +21,13 @@ export const server = http.createServer(async (req, res) => {
   const requestId = randomUUID();
   const startedAt = performance.now();
   res.setHeader('X-Request-Id', requestId);
+  let url;
+  try { url = new URL(req.url, 'http://localhost'); }
+  catch { return sendJson(res, 400, { error: 'Invalid request URL' }); }
   res.once('finish', () => {
     if (process.env.REQUEST_LOG_ENABLED === 'false') return;
-    console.log(JSON.stringify({ event: 'http_request', requestId, method: req.method, path: new URL(req.url, 'http://localhost').pathname, status: res.statusCode, durationMs: Number((performance.now() - startedAt).toFixed(1)) }));
+    console.log(JSON.stringify({ event: 'http_request', requestId, method: req.method, path: url.pathname, status: res.statusCode, durationMs: Number((performance.now() - startedAt).toFixed(1)) }));
   });
-  const url = new URL(req.url, 'http://localhost');
   if (req.method === 'GET' && url.pathname === '/healthz') return sendJson(res, 200, { status: 'ok' });
   if (req.method === 'GET' && url.pathname === '/api/scenarios') return sendJson(res, 200, Object.keys(scenarios));
   if (req.method === 'POST' && url.pathname === '/api/demo-sessions') {
@@ -64,18 +66,19 @@ export const server = http.createServer(async (req, res) => {
   }
   if (req.method === 'POST' && url.pathname === '/api/voice-token') {
     const currentSessionId = sessionId(req);
+    let reservation;
     try {
       if (process.env.VOICE_DEMO_ENABLED === 'false') return sendJson(res, 503, { error: 'Voice mode is temporarily disabled. Use text mode.' });
-      demoAccess.reserveVoice(currentSessionId, clientId(req), {
+      reservation = demoAccess.reserveVoice(currentSessionId, clientId(req), {
         maxConcurrent: Number(process.env.VOICE_MAX_CONCURRENT || 2),
         dailyLimit: Number(process.env.VOICE_DAILY_TOKEN_LIMIT || 50)
       });
       const token = await createVoiceToken({ apiKey: process.env.ASSEMBLYAI_API_KEY });
-      demoAccess.commitVoice(currentSessionId);
+      demoAccess.commitVoice(currentSessionId, reservation.id);
       return sendJson(res, 200, { token, expiresInSeconds: 60, maxSessionDurationSeconds: 180 });
     } catch (error) {
-      if (currentSessionId) {
-        try { demoAccess.releaseVoice(currentSessionId, clientId(req)); } catch {}
+      if (reservation) {
+        try { demoAccess.releaseVoice(currentSessionId, clientId(req), reservation.id); } catch {}
       }
       if (error.status) return sendJson(res, error.status, { error: error.message });
       const missing = !process.env.ASSEMBLYAI_API_KEY;

@@ -10,6 +10,8 @@ const SYSTEM_PROMPT = 'You are VoiceOps, a focused read-only SRE incident assist
 
 let ws, stream, audio, worklet, lastEvent, playbackTime = 0, demoSession;
 let pending = [], currentEvaluation, lastEvaluation;
+let sessionRequest, activeRun, voiceTimer, leaseRelease;
+const playbackSources = new Set();
 
 const setStatus = (text, error = false) => { ui.status.textContent = text; ui.status.className = error ? 'error' : ''; };
 const addTranscript = (role, text) => {
@@ -20,26 +22,33 @@ const addTranscript = (role, text) => {
 
 async function getDemoSession() {
   if (demoSession) return demoSession;
-  const response = await fetch('/api/demo-sessions', { method: 'POST' });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Unable to create a demo session');
-  demoSession = data.sessionId;
-  return demoSession;
+  if (!sessionRequest) sessionRequest = (async () => {
+    const response = await fetch('/api/demo-sessions', { method: 'POST' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Unable to create a demo session');
+    demoSession = data.sessionId;
+    return demoSession;
+  })().finally(() => { sessionRequest = undefined; });
+  return sessionRequest;
 }
 
 async function apiFetch(url, options = {}) {
   const id = await getDemoSession();
-  return fetch(url, { ...options, headers: { ...options.headers, 'X-VoiceOps-Session': id } });
+  const send = session => fetch(url, { ...options, headers: { ...options.headers, 'X-VoiceOps-Session': session } });
+  const response = await send(id);
+  if (response.status !== 401) return response;
+  if (demoSession === id) demoSession = undefined;
+  return send(await getDemoSession());
 }
 
-async function investigate(callId) {
+async function investigate(callId, scenario = ui.scenario.value, render = true) {
   const response = await apiFetch('/api/investigations', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ service: 'nginx', scenario: ui.scenario.value, callId })
+    body: JSON.stringify({ service: 'nginx', scenario, callId })
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Investigation failed');
-  ui.report.textContent = JSON.stringify(data, null, 2);
+  if (render) ui.report.textContent = JSON.stringify(data, null, 2);
   return data;
 }
 
@@ -67,6 +76,8 @@ function playAudio(data) {
   const source = audio.createBufferSource();
   source.buffer = buffer;
   source.connect(audio.destination);
+  playbackSources.add(source);
+  source.onended = () => playbackSources.delete(source);
   playbackTime = Math.max(playbackTime, audio.currentTime);
   source.start(playbackTime);
   playbackTime += buffer.duration;
@@ -79,21 +90,25 @@ function countEvent(type) {
 
 async function flushTools() {
   if (lastEvent !== 'reply.done' || !pending.length || ws?.readyState !== WebSocket.OPEN) return;
+  const socket = ws, evaluation = currentEvaluation;
   for (const call of pending.splice(0)) {
     const started = performance.now();
     try {
-      const report = await investigate(call.call_id);
-      if (currentEvaluation) {
-        currentEvaluation.tool = { called: true, success: true, latencyMs: performance.now() - started };
-        currentEvaluation.report = {
+      const report = await investigate(call.call_id, evaluation.scenario, false);
+      if (ws !== socket || socket.readyState !== WebSocket.OPEN) return;
+      ui.report.textContent = JSON.stringify(report, null, 2);
+      if (currentEvaluation === evaluation) {
+        evaluation.tool = { called: true, success: true, latencyMs: performance.now() - started };
+        evaluation.report = {
           runId: report.runId, status: report.status, probableCause: report.probable_cause,
           validation: report.validation
         };
       }
-      ws.send(JSON.stringify({ type: 'tool.result', call_id: call.call_id, result: JSON.stringify(report) }));
+      socket.send(JSON.stringify({ type: 'tool.result', call_id: call.call_id, result: JSON.stringify(report) }));
     } catch {
-      if (currentEvaluation) currentEvaluation.tool = { called: true, success: false, latencyMs: performance.now() - started };
-      ws.send(JSON.stringify({ type: 'tool.result', call_id: call.call_id, result: JSON.stringify({ error: 'Investigation unavailable' }) }));
+      if (ws !== socket || socket.readyState !== WebSocket.OPEN) return;
+      if (currentEvaluation === evaluation) evaluation.tool = { called: true, success: false, latencyMs: performance.now() - started };
+      socket.send(JSON.stringify({ type: 'tool.result', call_id: call.call_id, result: JSON.stringify({ error: 'Investigation unavailable' }) }));
     }
   }
 }
@@ -137,12 +152,16 @@ async function finalizeEvaluation(cleanEnd) {
 }
 
 async function startVoice() {
+  if (activeRun) return;
+  const run = activeRun = {};
   ui.voice.disabled = true;
   setStatus('Requesting a short-lived token…');
   try {
+    await leaseRelease;
     const tokenResponse = await apiFetch('/api/voice-token', { method: 'POST' });
     const tokenData = await tokenResponse.json();
     if (!tokenResponse.ok) throw new Error(tokenData.error);
+    run.leaseSession = demoSession;
     beginEvaluation();
     audio = new AudioContext();
     await audio.audioWorklet.addModule('/audio-worklet.js');
@@ -151,11 +170,12 @@ async function startVoice() {
     worklet = new AudioWorkletNode(audio, 'voiceops-pcm', { processorOptions: { inputSampleRate: audio.sampleRate } });
     audio.createMediaStreamSource(stream).connect(worklet);
     ws = new WebSocket(`wss://agents.assemblyai.com/v1/ws?token=${encodeURIComponent(tokenData.token)}`);
+    voiceTimer = setTimeout(() => finishVoice(run, false, 'Voice connection timed out.'), 15_000);
     pending = [];
     lastEvent = null;
     playbackTime = audio.currentTime;
     worklet.port.onmessage = event => {
-      if (ws.readyState === WebSocket.OPEN && lastEvent) ws.send(JSON.stringify({ type: 'input.audio', audio: bytesToBase64(event.data) }));
+      if (activeRun === run && ws?.readyState === WebSocket.OPEN && lastEvent) ws.send(JSON.stringify({ type: 'input.audio', audio: bytesToBase64(event.data) }));
     };
     ws.onopen = () => ws.send(JSON.stringify({ type: 'session.update', session: {
       system_prompt: SYSTEM_PROMPT,
@@ -164,9 +184,12 @@ async function startVoice() {
       output: { type: 'audio', voice: 'ivy' }
     } }));
     ws.onmessage = async event => {
+      if (activeRun !== run) return;
       const message = JSON.parse(event.data);
       countEvent(message.type);
       if (message.type === 'session.ready') {
+        clearTimeout(voiceTimer);
+        voiceTimer = setTimeout(endVoice, 180_000);
         lastEvent = message.type;
         ui.stop.disabled = false;
         setStatus('Session active. Say: investigate nginx 502 errors.');
@@ -176,33 +199,52 @@ async function startVoice() {
       else if (message.type === 'tool.call' && message.name === 'investigate_nginx') { pending.push(message); await flushTools(); }
       else if (message.type === 'reply.done') {
         lastEvent = message.type;
-        if (message.status === 'interrupted') pending = []; else await flushTools();
+        if (message.status === 'interrupted') { pending = []; stopPlayback(); } else await flushTools();
       } else if (message.type === 'reply.started' || message.type === 'input.speech.started') lastEvent = message.type;
-      else if (message.type === 'session.ended') { await finalizeEvaluation(true); cleanup(); }
+      else if (message.type === 'session.ended') finishVoice(run, true, 'Voice session ended.');
       else if (message.type === 'session.error' || message.type === 'error') setStatus(message.message || 'Voice provider error', true);
     };
-    ws.onclose = () => { void finalizeEvaluation(false); cleanup(); };
+    ws.onclose = () => finishVoice(run, false, 'Voice connection closed.');
+    ws.onerror = () => finishVoice(run, false, 'Voice connection failed.');
   } catch (error) {
-    await finalizeEvaluation(false);
-    cleanup();
-    setStatus(error.message || 'Unable to start the voice session', true);
+    finishVoice(run, false, error.message || 'Unable to start the voice session');
   }
 }
 
-function releaseVoiceLease() {
-  if (!demoSession) return;
-  fetch('/api/voice-lease', { method: 'DELETE', headers: { 'X-VoiceOps-Session': demoSession }, keepalive: true }).catch(() => {});
+function releaseVoiceLease(id) {
+  if (!id) return;
+  leaseRelease = fetch('/api/voice-lease', { method: 'DELETE', headers: { 'X-VoiceOps-Session': id }, keepalive: true }).catch(() => {});
 }
 
 function cleanup() {
+  const leaseSession = activeRun?.leaseSession;
+  activeRun = undefined;
+  clearTimeout(voiceTimer);
+  const socket = ws;
+  ws = undefined;
+  if (socket) { socket.onclose = socket.onerror = socket.onmessage = socket.onopen = null; socket.close(); }
+  stopPlayback();
   stream?.getTracks().forEach(track => track.stop());
   worklet?.disconnect();
-  audio?.close();
-  releaseVoiceLease();
+  if (audio && audio.state !== 'closed') void audio.close().catch(() => {});
+  releaseVoiceLease(leaseSession);
   stream = worklet = audio = undefined;
-  ws = undefined;
+  pending = [];
   ui.voice.disabled = false;
   ui.stop.disabled = true;
+}
+
+function stopPlayback() {
+  for (const source of playbackSources) source.stop();
+  playbackSources.clear();
+  playbackTime = audio?.currentTime || 0;
+}
+
+function finishVoice(run, cleanEnd, message) {
+  if (activeRun !== run) return;
+  void finalizeEvaluation(cleanEnd);
+  cleanup();
+  setStatus(message, !cleanEnd);
 }
 
 function endVoice() {
@@ -210,6 +252,9 @@ function endVoice() {
     if (currentEvaluation) currentEvaluation.endRequested = true;
     setStatus('Ending session…');
     ws.send(JSON.stringify({ type: 'session.end' }));
+    clearTimeout(voiceTimer);
+    const run = activeRun;
+    voiceTimer = setTimeout(() => finishVoice(run, false, 'Voice session end timed out.'), 5000);
   } else cleanup();
 }
 
@@ -230,5 +275,5 @@ ui.stop.addEventListener('click', endVoice);
 ui.export.addEventListener('click', exportEvaluations);
 window.addEventListener('pagehide', () => {
   if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'session.end' }));
-  releaseVoiceLease();
+  releaseVoiceLease(activeRun?.leaseSession);
 });

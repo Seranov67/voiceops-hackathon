@@ -25,8 +25,12 @@ Only `nginx` and the server-known scenarios are accepted. The question text is c
 
 Protected requests require the `X-VoiceOps-Session` header returned by `POST /api/demo-sessions`. Sessions are bound to the network client, expire after inactivity, and keep a bounded call-result cache for idempotency.
 
+The browser renews an expired session after a 401 and retries the request once. Renewal does not recover reports or evaluation captures from the expired session.
+
 Each response includes `X-Request-Id`. Structured request logs contain only the correlation ID, method, path, status, and duration; they exclude request bodies, tokens, audio, evidence, and client addresses. Set `REQUEST_LOG_ENABLED=false` to disable them.
 
 Live evaluation capture stores bounded provider-event counts, transcript text, tool latency, canonical validation flags, and clean-end status. It explicitly excludes tokens, audio, full evidence records, arbitrary client fields, and other sessions' captures. The in-memory capture is lost on server restart; use **Export JSON** before restarting.
 
 `POST /api/voice-token` returns 503 without server configuration and never returns the long-lived key. Token issuance is limited per client, by concurrent lease count, and by a daily global token budget. A failed provider request rolls back its concurrency reservation without spending daily budget. The browser releases its lease on session cleanup and page exit. `VOICE_DEMO_ENABLED=false` is the operational kill switch.
+
+Pending provider requests reserve daily budget. A second token request for an already reserved session returns 409 without removing the original reservation. Only the issuing request can roll back a pending reservation; the public release endpoint releases committed leases. Leases last up to 240 seconds to cover the token's 60-second connection window and the 180-second voice session.

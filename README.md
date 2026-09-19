@@ -2,7 +2,7 @@
 
 VoiceOps Sentinel is a read-only voice SRE assistant built for the AssemblyAI Voice Agent Hackathon. It investigates a focused nginx 502 scenario and produces a canonical incident report with exact, traceable log evidence.
 
-Current status: local UI and HTTP API, synthetic scenarios, deterministic diagnosis, text fallback, independent evidence validation, and three observed passing voice behaviors for each of the five required AssemblyAI scenarios. Automated live-evaluation capture and public deployment are not complete, so this is not yet a finished submission.
+Current status: local UI and HTTP API, synthetic scenarios, deterministic diagnosis, text fallback, independent evidence validation, browser live-evaluation capture, and a committed matrix of three passing voice runs for each of the five required AssemblyAI scenarios. Public deployment and hosted-environment verification remain incomplete.
 
 ## Run locally
 
@@ -40,13 +40,13 @@ The committed formal live matrix contains 15 passing AssemblyAI voice runs: thre
 npm run evaluate:live -- path/to/export-one.json path/to/export-two.json
 ```
 
-The merger accepts only cleanly ended runs with a successful tool call, the expected status and cause, and all three canonical validation flags. The current matrix reports 8.85 ms average server tool latency and 10.6 ms p95 across the selected runs; these figures do not represent full conversational latency.
+The merger accepts only cleanly ended runs with a successful tool call, the expected status and cause, and all three canonical validation flags. It deduplicates overlapping exports by `evaluationId` before selecting three runs per scenario; captures without an ID are excluded. The current matrix reports 8.85 ms average server tool latency and 10.6 ms p95 across the selected runs; these figures do not represent full conversational latency.
 
 ## Next milestones
 
-1. Run a live provider spike and verify the event contract, tool roundtrip, transcript, audio response, and clean `session.end`.
+1. Repeat the live provider smoke test after the session-lifecycle and audio-resampling fixes; automated tests use simulated browser APIs and do not replace a real microphone test.
 2. Verify the demo-session, rate, concurrency, daily-budget, and kill-switch controls in the hosted environment.
-3. Run the five real-agent scenarios three times each and preserve the evaluation results.
+3. Refresh the five-scenario live matrix after hosted verification and preserve the exported captures.
 4. Deploy an HTTPS fixture demo, then prepare the public repository, video, pitch deck, and cover image.
 
 See [the architecture plan](docs/architecture-plan.md), [API contract](docs/api.md), [decisions](docs/decisions.md), [hackathon review](docs/hackathon.md), and [reuse audit](docs/reuse-audit.md).
