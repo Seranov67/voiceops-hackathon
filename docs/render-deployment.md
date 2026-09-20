@@ -1,6 +1,6 @@
 # Render deployment
 
-Deployment preparation: 2026-09-20. Public deployment and hosted verification are pending.
+Deployed 2026-09-20: https://voiceops-sentinel.onrender.com (Render Free, Frankfurt). Runtime commit: `8a040a1`. Hosted text/API smoke passed all five scenarios, session/report isolation, and the disabled voice endpoint. Voice configuration and live hosted tests remain pending. Results: `artifacts/evaluations/render-text-smoke-2026-09-20.json`.
 
 Use the root `render.yaml` Blueprint with branch `voiceops-hackathon`. It creates one free Node.js 22 web service in Frankfurt, runs `npm test` before deployment, starts with `npm start`, and probes `/healthz`. Render supplies `PORT` and HTTPS. No dependency installation or compilation is required by the current application. Automatic deploys are off to avoid invalidating active evaluations on a push.
 
@@ -9,7 +9,7 @@ Use the root `render.yaml` Blueprint with branch `voiceops-hackathon`. It create
 1. Push the reviewed deployment changes to the configured GitHub branch.
 2. Sign in to Render, create a Blueprint from the repository, and select that branch. Confirm the Free service plan before applying it.
 3. Wait for the build and health check, then open the generated HTTPS URL. The initial deployment intentionally enables text mode only.
-4. Verify all five text scenarios and session ownership from two separate browser sessions. Verify that the ingress appends the connecting client IP to `X-Forwarded-For`, including when a request supplies a spoofed prefix. `TRUST_PROXY=true` uses the rightmost valid address; do not use this setting for a directly exposed server or an unverified proxy chain.
+4. Verify all five text scenarios and session ownership from two separate browser sessions. With Render's `RENDER=true` and `TRUST_PROXY=true`, client identity uses the Cloudflare ingress `CF-Connecting-IP` header and fails closed if it is absent. Hosted checks confirmed that changing `X-Forwarded-For` and `True-Client-IP` did not change session ownership; a forged `CF-Connecting-IP` request was rejected by the edge with HTTP 403. The rightmost forwarded address is unsuitable on this deployment because Render has multiple internal hops. Outside Render, proxy mode still uses the rightmost forwarded address and must only be enabled behind a verified trusted ingress.
 5. Add `ASSEMBLYAI_API_KEY` through Render's secret environment settings and set `VOICE_DEMO_ENABLED=true` after the checks. Never commit the key or put it in a URL.
 6. Run voice tests from outside the developer network: microphone, all five scenarios, End, immediate restart, and Export JSON. Verify rate limits, two-session concurrency, the daily token guard and the kill switch with controlled test settings, then restore the intended limits.
 7. Export captures before redeploying and record the public URL and deployed commit. Refresh the 15-run matrix using hosted captures.

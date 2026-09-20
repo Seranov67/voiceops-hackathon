@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-20T06:31:40.012Z",
+  "base": "https://voiceops-sentinel.onrender.com",
+  "deployedCommit": "8a040a1",
+  "scenarios": [
+    {
+      "scenario": "refused",
+      "passed": true
+    },
+    {
+      "scenario": "timeout",
+      "passed": true
+    },
+    {
+      "scenario": "healthy",
+      "passed": true
+    },
+    {
+      "scenario": "empty",
+      "passed": true
+    },
+    {
+      "scenario": "injection",
+      "passed": true
+    }
+  ],
+  "foreignReportsDenied": true,
+  "missingSessionDenied": true,
+  "spoofedForwardedHeadersDidNotBreakSession": true,
+  "voiceKillSwitch": true,
+  "voiceProviderTested": false
+}
