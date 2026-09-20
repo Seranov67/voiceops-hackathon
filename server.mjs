@@ -110,5 +110,7 @@ export const server = http.createServer(async (req, res) => {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try { process.loadEnvFile(); } catch (error) { if (error.code !== 'ENOENT') throw error; }
-  server.listen(Number(process.env.PORT || 3000), '127.0.0.1', () => console.log('VoiceOps: http://127.0.0.1:3000'));
+  const host = process.env.HOST || '127.0.0.1';
+  const port = Number(process.env.PORT || 3000);
+  server.listen(port, host, () => console.log(`VoiceOps listening on ${host}:${port}`));
 }

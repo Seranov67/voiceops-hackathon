@@ -44,7 +44,9 @@ The merger accepts only cleanly ended runs with a successful tool call, the expe
 
 ## Next milestones
 
-1. Repeat the live provider smoke test after the session-lifecycle and audio-resampling fixes; automated tests use simulated browser APIs and do not replace a real microphone test.
+Render deployment is prepared in `render.yaml`; follow [the deployment guide](docs/render-deployment.md). The initial Free service runs text mode until hosted checks and server-secret configuration are complete.
+
+1. Local post-fix voice smoke completed: five captured runs, one per required scenario, passed tool, report-validation, and clean-end checks. See [the smoke review](artifacts/evaluations/post-fix-smoke-2026-09-20.md). The export does not measure perceived audio quality or hardware microphone release.
 2. Verify the demo-session, rate, concurrency, daily-budget, and kill-switch controls in the hosted environment.
 3. Refresh the five-scenario live matrix after hosted verification and preserve the exported captures.
 4. Deploy an HTTPS fixture demo, then prepare the public repository, video, pitch deck, and cover image.

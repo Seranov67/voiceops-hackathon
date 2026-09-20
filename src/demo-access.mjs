@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { isIP } from 'node:net';
 
 const minute = 60_000;
 const day = 86_400_000;
@@ -110,6 +111,15 @@ export class DemoAccess {
   getEvaluations(session) { return structuredClone([...session.evaluations.values()]); }
 }
 
-export function clientId(req) { return req.socket.remoteAddress || 'unknown'; }
+export function clientId(req, trustProxy = process.env.TRUST_PROXY === 'true') {
+  const direct = req.socket.remoteAddress || 'unknown';
+  if (!trustProxy) return direct;
+  // Enable only behind an ingress that appends the connecting client's address.
+  // Never trust a user-supplied leftmost address in a forwarded chain.
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded !== 'string') return direct;
+  const nearest = forwarded.split(',').at(-1).trim();
+  return isIP(nearest) ? nearest : direct;
+}
 export function sessionId(req) { const value = req.headers['x-voiceops-session']; return typeof value === 'string' ? value : ''; }
 export function accessError(status, message) { return Object.assign(new Error(message), { status }); }

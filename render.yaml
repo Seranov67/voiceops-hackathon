@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: voiceops-sentinel
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: voiceops-hackathon
+    buildCommand: npm test
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "true"
+      - key: VOICE_DEMO_ENABLED
+        value: "false"
+      - key: VOICE_MAX_CONCURRENT
+        value: "2"
+      - key: VOICE_DAILY_TOKEN_LIMIT
+        value: "50"
+      - key: REQUEST_LOG_ENABLED
+        value: "true"

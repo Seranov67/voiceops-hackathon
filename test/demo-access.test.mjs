@@ -1,6 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DemoAccess } from '../src/demo-access.mjs';
+import { DemoAccess, clientId } from '../src/demo-access.mjs';
+
+test('proxy identity ignores spoofed prefixes and is opt-in', () => {
+  const request = { socket: { remoteAddress: '127.0.0.1' }, headers: { 'x-forwarded-for': '198.51.100.9, 203.0.113.8' } };
+  assert.equal(clientId(request, false), '127.0.0.1');
+  assert.equal(clientId(request, true), '203.0.113.8');
+  request.headers['x-forwarded-for'] = '198.51.100.10, 203.0.113.8';
+  assert.equal(clientId(request, true), '203.0.113.8');
+  request.headers['x-forwarded-for'] = '2001:db8::1';
+  assert.equal(clientId(request, true), '2001:db8::1');
+  request.headers['x-forwarded-for'] = '198.51.100.9, invalid';
+  assert.equal(clientId(request, true), '127.0.0.1');
+  delete request.headers['x-forwarded-for'];
+  assert.equal(clientId(request, true), '127.0.0.1');
+});
 
 test('session ownership and expiry are enforced',()=>{let now=1_000;const access=new DemoAccess({now:()=>now,sessionTtlMs:100});const session=access.createSession('client-a');assert.ok(access.requireSession(session.id,'client-a'));assert.throws(()=>access.requireSession(session.id,'client-b'),error=>error.status===401);now=1_201;assert.throws(()=>access.requireSession(session.id,'client-a'),error=>error.status===401);});
 
