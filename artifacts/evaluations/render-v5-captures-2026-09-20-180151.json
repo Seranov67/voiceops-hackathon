@@ -1,0 +1,334 @@
+{
+  "evaluations": [
+    {
+      "evaluationId": "320a9465-a35b-4a97-ae74-62c4f7a919f2",
+      "schemaVersion": "1.0",
+      "capturedAt": "2026-09-20T17:58:39.462Z",
+      "scenario": "timeout",
+      "promptVersion": "5",
+      "startedAt": "2026-09-20T17:58:02.071Z",
+      "endedAt": "2026-09-20T17:58:38.473Z",
+      "durationMs": 36401.700000000186,
+      "cleanEnd": true,
+      "events": {
+        "session.updated": 1,
+        "session.ready": 1,
+        "reply.started": 3,
+        "reply.audio": 3046,
+        "transcript.agent.delta": 62,
+        "transcript.agent": 2,
+        "reply.done": 3,
+        "input.speech.started": 1,
+        "transcript.user.delta": 3,
+        "input.speech.stopped": 1,
+        "transcript.user": 1,
+        "tool.call": 1,
+        "session.ended": 1
+      },
+      "transcript": [
+        {
+          "role": "agent",
+          "text": "Hello, I am VoiceOps. Say: investigate nginx 502 errors."
+        },
+        {
+          "role": "user",
+          "text": "Investigate nginx 502 errors."
+        },
+        {
+          "role": "agent",
+          "text": "The probable cause is an upstream timeout, as evidenced by the error text upstream timed out one hundred and ten Connection timed out while reading response header. I recommend inspecting the upstream service status and application logs using read-only tools. Please note that this data is synthetic and business impact was not measured."
+        }
+      ],
+      "tool": {
+        "called": true,
+        "success": true,
+        "latencyMs": 89.90000000037253
+      },
+      "report": {
+        "runId": "692aec96-fe13-426b-80b2-452bd1a7eb2c",
+        "status": "incident",
+        "probableCause": "upstream_timeout",
+        "validation": {
+          "schema": true,
+          "provenance": true,
+          "policy": true
+        }
+      }
+    },
+    {
+      "evaluationId": "10be47b8-e20f-4efc-88d3-887ec714250b",
+      "schemaVersion": "1.0",
+      "capturedAt": "2026-09-20T17:59:18.067Z",
+      "scenario": "timeout",
+      "promptVersion": "5",
+      "startedAt": "2026-09-20T17:58:41.563Z",
+      "endedAt": "2026-09-20T17:59:17.096Z",
+      "durationMs": 35533.5,
+      "cleanEnd": true,
+      "events": {
+        "session.updated": 1,
+        "session.ready": 1,
+        "reply.started": 3,
+        "reply.audio": 2967,
+        "transcript.agent.delta": 61,
+        "transcript.agent": 2,
+        "reply.done": 3,
+        "input.speech.started": 1,
+        "transcript.user.delta": 3,
+        "input.speech.stopped": 1,
+        "transcript.user": 1,
+        "tool.call": 1,
+        "session.ended": 1
+      },
+      "transcript": [
+        {
+          "role": "agent",
+          "text": "Hello, I am VoiceOps. Say: investigate nginx 502 errors."
+        },
+        {
+          "role": "user",
+          "text": "Investigate nginx 502 errors."
+        },
+        {
+          "role": "agent",
+          "text": "The incident is caused by an upstream timeout, as shown by the error message upstream timed out one hundred and ten Connection timed out while reading response header. I recommend inspecting the upstream service status and application logs using read only tools. This data is synthetic and business impact was not measured."
+        }
+      ],
+      "tool": {
+        "called": true,
+        "success": true,
+        "latencyMs": 85.1000000005588
+      },
+      "report": {
+        "runId": "f19b1445-f80a-488e-ad68-b7b83ee7cd1d",
+        "status": "incident",
+        "probableCause": "upstream_timeout",
+        "validation": {
+          "schema": true,
+          "provenance": true,
+          "policy": true
+        }
+      }
+    },
+    {
+      "evaluationId": "6769438d-f01a-4cd4-9df2-07991ebe3a5d",
+      "schemaVersion": "1.0",
+      "capturedAt": "2026-09-20T17:59:56.635Z",
+      "scenario": "timeout",
+      "promptVersion": "5",
+      "startedAt": "2026-09-20T17:59:18.383Z",
+      "endedAt": "2026-09-20T17:59:55.656Z",
+      "durationMs": 37273,
+      "cleanEnd": true,
+      "events": {
+        "session.updated": 1,
+        "session.ready": 1,
+        "reply.started": 3,
+        "reply.audio": 3061,
+        "transcript.agent.delta": 60,
+        "transcript.agent": 2,
+        "reply.done": 3,
+        "input.speech.started": 1,
+        "transcript.user.delta": 3,
+        "input.speech.stopped": 1,
+        "transcript.user": 1,
+        "tool.call": 1,
+        "session.ended": 1
+      },
+      "transcript": [
+        {
+          "role": "agent",
+          "text": "Hello, I am VoiceOps. Say: investigate nginx 502 errors."
+        },
+        {
+          "role": "user",
+          "text": "Investigate nginx 502 errors."
+        },
+        {
+          "role": "agent",
+          "text": "The probable cause is an upstream timeout, as indicated by the error text upstream timed out one hundred ten Connection timed out while reading response header. I recommend inspecting upstream service status and application logs using read-only tools. Please note that this data is synthetic and business impact was not measured."
+        }
+      ],
+      "tool": {
+        "called": true,
+        "success": true,
+        "latencyMs": 85.3999999994412
+      },
+      "report": {
+        "runId": "3d57556b-75b4-413e-8792-524875b12c07",
+        "status": "incident",
+        "probableCause": "upstream_timeout",
+        "validation": {
+          "schema": true,
+          "provenance": true,
+          "policy": true
+        }
+      }
+    },
+    {
+      "evaluationId": "ecdda6f2-88a1-4db3-b240-6a0a9eddf6e6",
+      "schemaVersion": "1.0",
+      "capturedAt": "2026-09-20T18:00:33.931Z",
+      "scenario": "healthy",
+      "promptVersion": "5",
+      "startedAt": "2026-09-20T17:59:58.925Z",
+      "endedAt": "2026-09-20T18:00:32.957Z",
+      "durationMs": 34032.39999999944,
+      "cleanEnd": true,
+      "events": {
+        "session.updated": 1,
+        "session.ready": 1,
+        "reply.started": 3,
+        "reply.audio": 2493,
+        "transcript.agent.delta": 42,
+        "transcript.agent": 2,
+        "reply.done": 3,
+        "input.speech.started": 1,
+        "transcript.user.delta": 3,
+        "input.speech.stopped": 1,
+        "transcript.user": 1,
+        "tool.call": 1,
+        "session.ended": 1
+      },
+      "transcript": [
+        {
+          "role": "agent",
+          "text": "Hello, I am VoiceOps. Say: investigate nginx 502 errors."
+        },
+        {
+          "role": "user",
+          "text": "Investigate nginx 502 errors."
+        },
+        {
+          "role": "agent",
+          "text": "No incident was observed in the checked fixture window. I found a single record of a two00 OK for the GET /health endpoint. This data is synthetic and business impact was not measured."
+        }
+      ],
+      "tool": {
+        "called": true,
+        "success": true,
+        "latencyMs": 87.09999999962747
+      },
+      "report": {
+        "runId": "e8180356-5709-40aa-9b73-35efd6115d76",
+        "status": "no_incident_observed",
+        "probableCause": null,
+        "validation": {
+          "schema": true,
+          "provenance": true,
+          "policy": true
+        }
+      }
+    },
+    {
+      "evaluationId": "2c5c4137-81d6-4247-baba-fb43a9c5b584",
+      "schemaVersion": "1.0",
+      "capturedAt": "2026-09-20T18:01:09.738Z",
+      "scenario": "healthy",
+      "promptVersion": "5",
+      "startedAt": "2026-09-20T18:00:38.866Z",
+      "endedAt": "2026-09-20T18:01:08.751Z",
+      "durationMs": 29884.60000000056,
+      "cleanEnd": true,
+      "events": {
+        "session.updated": 1,
+        "session.ready": 1,
+        "reply.started": 3,
+        "reply.audio": 2397,
+        "transcript.agent.delta": 39,
+        "transcript.agent": 2,
+        "reply.done": 3,
+        "input.speech.started": 1,
+        "transcript.user.delta": 2,
+        "input.speech.stopped": 1,
+        "transcript.user": 1,
+        "tool.call": 1,
+        "session.ended": 1
+      },
+      "transcript": [
+        {
+          "role": "agent",
+          "text": "Hello, I am VoiceOps. Say: investigate nginx 502 errors."
+        },
+        {
+          "role": "user",
+          "text": "Investigate nginx 502 errors."
+        },
+        {
+          "role": "agent",
+          "text": "No incident was observed in the checked fixture window. A single two00 OK record was observed for GET slash health. This data is synthetic and business impact was not measured."
+        }
+      ],
+      "tool": {
+        "called": true,
+        "success": true,
+        "latencyMs": 83.1000000005588
+      },
+      "report": {
+        "runId": "47ac8c74-3937-493e-8f17-2a8116d65acd",
+        "status": "no_incident_observed",
+        "probableCause": null,
+        "validation": {
+          "schema": true,
+          "provenance": true,
+          "policy": true
+        }
+      }
+    },
+    {
+      "evaluationId": "87266b6a-90c5-4384-abda-407c8d4e4b08",
+      "schemaVersion": "1.0",
+      "capturedAt": "2026-09-20T18:01:42.115Z",
+      "scenario": "healthy",
+      "promptVersion": "5",
+      "startedAt": "2026-09-20T18:01:10.594Z",
+      "endedAt": "2026-09-20T18:01:41.140Z",
+      "durationMs": 30546,
+      "cleanEnd": true,
+      "events": {
+        "session.updated": 1,
+        "session.ready": 1,
+        "reply.started": 3,
+        "reply.audio": 2410,
+        "transcript.agent.delta": 44,
+        "transcript.agent": 2,
+        "reply.done": 3,
+        "input.speech.started": 1,
+        "transcript.user.delta": 2,
+        "input.speech.stopped": 1,
+        "transcript.user": 1,
+        "tool.call": 1,
+        "session.ended": 1
+      },
+      "transcript": [
+        {
+          "role": "agent",
+          "text": "Hello, I am VoiceOps. Say: investigate nginx 502 errors."
+        },
+        {
+          "role": "user",
+          "text": "Investigate nginx 502 errors."
+        },
+        {
+          "role": "agent",
+          "text": "No incident was observed in the checked fixture window. I found a record of a GET slash health request returning a 2 0 0 OK. This data is synthetic and business impact was not measured."
+        }
+      ],
+      "tool": {
+        "called": true,
+        "success": true,
+        "latencyMs": 93
+      },
+      "report": {
+        "runId": "0d304f93-c666-4a7c-b730-d5d15c99e4b1",
+        "status": "no_incident_observed",
+        "probableCause": null,
+        "validation": {
+          "schema": true,
+          "provenance": true,
+          "policy": true
+        }
+      }
+    }
+  ]
+}
