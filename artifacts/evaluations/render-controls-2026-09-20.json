@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-09-20T18:07:01.586Z",
+  "base": "https://voiceops-sentinel.onrender.com",
+  "checks": {
+    "twoVoiceReservations": true,
+    "voiceRateLimit": true,
+    "testReservationsReleased": true,
+    "investigationRateLimit": {
+      "successes": 30,
+      "limited": true
+    }
+  },
+  "limitations": [
+    "Daily-budget enforcement verified in local tests only; not exhausted on hosted provider.",
+    "Reservations tested without opening audio WebSockets.",
+    "Rate limits for this client may remain active for up to one minute."
+  ]
+}

@@ -1,5 +1,7 @@
 # Render deployment
 
+Latest status: voice is enabled via the linked `voiceops-provider` group and the service's kill-switch setting. Prompt v5 is deployed. Its hosted technical matrix is complete (15/15); occasional definitive spoken cause wording is an accepted demo limitation. On September 20, hosted checks verified two concurrent voice reservations, rejection of the third, the voice request rate limit, and the investigation limit (30 accepted, next request rejected). Test reservations were released. See `artifacts/evaluations/render-controls-2026-09-20.json`. Daily-budget enforcement has local test coverage but has not been tested to exhaustion on Render; its in-memory reset limitation remains.
+
 Deployed 2026-09-20: https://voiceops-sentinel.onrender.com (Render Free, Frankfurt). Runtime commit: `8a040a1`. Hosted text/API smoke passed all five scenarios, session/report isolation, and the disabled voice endpoint. Voice configuration and live hosted tests remain pending. Results: `artifacts/evaluations/render-text-smoke-2026-09-20.json`.
 
 Use the root `render.yaml` Blueprint with branch `voiceops-hackathon`. It creates one free Node.js 22 web service in Frankfurt, runs `npm test` before deployment, starts with `npm start`, and probes `/healthz`. Render supplies `PORT` and HTTPS. No dependency installation or compilation is required by the current application. Automatic deploys are off to avoid invalidating active evaluations on a push.
