@@ -3,6 +3,15 @@ import assert from 'node:assert/strict';
 import net from 'node:net';
 import { server, demoAccess } from '../server.mjs';
 let base;
+// Hosted build environments contain production flags and may contain a real key.
+// Tests must never inherit provider credentials or the deployed kill switch.
+const environmentKeys = ['ASSEMBLYAI_API_KEY', 'VOICE_DEMO_ENABLED', 'TRUST_PROXY', 'VOICE_MAX_CONCURRENT', 'VOICE_DAILY_TOKEN_LIMIT'];
+const savedEnvironment = environmentKeys.map(key => process.env[key]);
+before(() => environmentKeys.forEach(key => { delete process.env[key]; }));
+after(() => environmentKeys.forEach((key, index) => {
+  if (savedEnvironment[index] === undefined) delete process.env[key];
+  else process.env[key] = savedEnvironment[index];
+}));
 before(async()=>{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));base=`http://127.0.0.1:${server.address().port}`;});
 after(()=>server.close());
 async function session(){const response=await fetch(base+'/api/demo-sessions',{method:'POST'});assert.equal(response.status,201);return (await response.json()).sessionId;}
