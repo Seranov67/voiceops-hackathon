@@ -111,9 +111,17 @@ export class DemoAccess {
   getEvaluations(session) { return structuredClone([...session.evaluations.values()]); }
 }
 
-export function clientId(req, trustProxy = process.env.TRUST_PROXY === 'true') {
+export function clientId(req, trustProxy = process.env.TRUST_PROXY === 'true', render = process.env.RENDER === 'true') {
   const direct = req.socket.remoteAddress || 'unknown';
   if (!trustProxy) return direct;
+  // Render's public ingress runs behind Cloudflare. Its overwritten client
+  // header stays stable across Render's internal proxy hops. Fail closed when
+  // the expected header is absent instead of binding a session to a proxy IP.
+  if (render) {
+    const client = req.headers['cf-connecting-ip'];
+    if (typeof client !== 'string' || !isIP(client.trim())) throw accessError(503, 'Unable to identify the demo client.');
+    return client.trim();
+  }
   // Enable only behind an ingress that appends the connecting client's address.
   // Never trust a user-supplied leftmost address in a forwarded chain.
   const forwarded = req.headers['x-forwarded-for'];

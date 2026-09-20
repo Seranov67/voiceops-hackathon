@@ -5,7 +5,7 @@ import { server, demoAccess } from '../server.mjs';
 let base;
 // Hosted build environments contain production flags and may contain a real key.
 // Tests must never inherit provider credentials or the deployed kill switch.
-const environmentKeys = ['ASSEMBLYAI_API_KEY', 'VOICE_DEMO_ENABLED', 'TRUST_PROXY', 'VOICE_MAX_CONCURRENT', 'VOICE_DAILY_TOKEN_LIMIT'];
+const environmentKeys = ['ASSEMBLYAI_API_KEY', 'VOICE_DEMO_ENABLED', 'TRUST_PROXY', 'RENDER', 'VOICE_MAX_CONCURRENT', 'VOICE_DAILY_TOKEN_LIMIT'];
 const savedEnvironment = environmentKeys.map(key => process.env[key]);
 before(() => environmentKeys.forEach(key => { delete process.env[key]; }));
 after(() => environmentKeys.forEach((key, index) => {

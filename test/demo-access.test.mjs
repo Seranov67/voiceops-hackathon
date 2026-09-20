@@ -16,6 +16,15 @@ test('proxy identity ignores spoofed prefixes and is opt-in', () => {
   assert.equal(clientId(request, true), '127.0.0.1');
 });
 
+test('Render ingress identity is stable across proxy hops and fails closed', () => {
+  const request = { socket: { remoteAddress: '10.0.0.1' }, headers: { 'cf-connecting-ip': '203.0.113.8', 'x-forwarded-for': '198.51.100.9, 10.0.0.2' } };
+  assert.equal(clientId(request, true, true), '203.0.113.8');
+  request.headers['x-forwarded-for'] = '198.51.100.10, 10.0.0.3';
+  assert.equal(clientId(request, true, true), '203.0.113.8');
+  delete request.headers['cf-connecting-ip'];
+  assert.throws(() => clientId(request, true, true), error => error.status === 503);
+});
+
 test('session ownership and expiry are enforced',()=>{let now=1_000;const access=new DemoAccess({now:()=>now,sessionTtlMs:100});const session=access.createSession('client-a');assert.ok(access.requireSession(session.id,'client-a'));assert.throws(()=>access.requireSession(session.id,'client-b'),error=>error.status===401);now=1_201;assert.throws(()=>access.requireSession(session.id,'client-a'),error=>error.status===401);});
 
 test('voice concurrency and daily budget are bounded',()=>{let now=1_000;const access=new DemoAccess({now:()=>now});const a=access.createSession('a'),b=access.createSession('b'),c=access.createSession('c');access.acquireVoice(a.id,'a',{maxConcurrent:2,dailyLimit:2});access.acquireVoice(b.id,'b',{maxConcurrent:2,dailyLimit:2});assert.throws(()=>access.acquireVoice(c.id,'c',{maxConcurrent:2,dailyLimit:2}),error=>error.status===429);now+=240_001;assert.throws(()=>access.acquireVoice(c.id,'c',{maxConcurrent:2,dailyLimit:2}),error=>error.status===429&&/budget/.test(error.message));});
