@@ -1,5 +1,11 @@
 # Architecture decisions
 
+## Voice prompt version 5 — hosted regression follow-up
+
+The September 20 hosted export passed all 15 technical capture checks but included an unsupported refused-connection presupposition in an injection-case recommendation and an incorrect "unknown status" paraphrase for empty evidence. Version 5 branches spoken responses by canonical status, separates unknown cause from insufficient-evidence status, requires neutral evidence-gathering recommendations when the cause is unknown, and forbids carrying a prior diagnosis forward. It also avoids reading full ISO timestamps character by character. These instructions are defense in depth, not deterministic enforcement. A fresh 15-run live matrix with transcript review remains required; version 4 captures do not validate version 5.
+
+Render's VOICE_DEMO_ENABLED is now configured with sync:false so Blueprint synchronization preserves the manually managed kill switch instead of restoring the initial false value. The existing service is enabled; new Blueprint setups must choose their initial value explicitly.
+
 ## ADR-001 — Voice Agent API browser transport
 
 Status: implemented, live provider verification pending.

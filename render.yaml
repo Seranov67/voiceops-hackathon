@@ -19,7 +19,7 @@ services:
       - key: TRUST_PROXY
         value: "true"
       - key: VOICE_DEMO_ENABLED
-        value: "false"
+        sync: false
       - key: VOICE_MAX_CONCURRENT
         value: "2"
       - key: VOICE_DAILY_TOKEN_LIMIT
