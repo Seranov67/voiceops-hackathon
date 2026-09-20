@@ -4,16 +4,16 @@ import { DemoAccess, clientId } from '../src/demo-access.mjs';
 
 test('proxy identity ignores spoofed prefixes and is opt-in', () => {
   const request = { socket: { remoteAddress: '127.0.0.1' }, headers: { 'x-forwarded-for': '198.51.100.9, 203.0.113.8' } };
-  assert.equal(clientId(request, false), '127.0.0.1');
-  assert.equal(clientId(request, true), '203.0.113.8');
+  assert.equal(clientId(request, false, false), '127.0.0.1');
+  assert.equal(clientId(request, true, false), '203.0.113.8');
   request.headers['x-forwarded-for'] = '198.51.100.10, 203.0.113.8';
-  assert.equal(clientId(request, true), '203.0.113.8');
+  assert.equal(clientId(request, true, false), '203.0.113.8');
   request.headers['x-forwarded-for'] = '2001:db8::1';
-  assert.equal(clientId(request, true), '2001:db8::1');
+  assert.equal(clientId(request, true, false), '2001:db8::1');
   request.headers['x-forwarded-for'] = '198.51.100.9, invalid';
-  assert.equal(clientId(request, true), '127.0.0.1');
+  assert.equal(clientId(request, true, false), '127.0.0.1');
   delete request.headers['x-forwarded-for'];
-  assert.equal(clientId(request, true), '127.0.0.1');
+  assert.equal(clientId(request, true, false), '127.0.0.1');
 });
 
 test('Render ingress identity is stable across proxy hops and fails closed', () => {
