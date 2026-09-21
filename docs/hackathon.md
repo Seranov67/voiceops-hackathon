@@ -14,15 +14,20 @@ Sources:
 - https://lablab.ai/guide/ai-hackathons
 - https://lablab.ai/guide/how-to-win-an-ai-hackathon
 
+## Current event status
+
+- The official event page lists September 1-30, 2026 and currently shows submissions open.
+- The exact closing time and time zone are not exposed in the accessible page text; check the countdown while logged in before the final upload.
+
 ## Still unconfirmed for this event
 
-- Exact submission time and time zone.
+- Exact September 30 submission time and time zone.
 - Event-specific judging weights or additional criteria.
 - Whether a specific AssemblyAI API is mandatory.
 - Rules for reusing pre-existing AI functionality.
 - MIT or other specific license requirements.
 
-The full rules pages did not expose their content through automated extraction. These items must be checked in the browser or confirmed with organizers. Do not apply rules from unrelated lablab.ai events. The internal submission target is September 29; this is not the official deadline.
+The full rules pages did not expose their content through automated extraction. These items must be checked in the browser or confirmed with organizers. Do not apply rules from unrelated lablab.ai events. Submit before September 30 rather than relying on the final countdown.
 
 ## Product alignment
 

@@ -2,7 +2,15 @@
 
 VoiceOps Sentinel is a read-only voice SRE assistant built for the AssemblyAI Voice Agent Hackathon. It investigates a focused nginx 502 scenario and produces a canonical incident report with exact, traceable log evidence.
 
-Current status: local UI and HTTP API, synthetic scenarios, deterministic diagnosis, text fallback, independent evidence validation, browser live-evaluation capture, and a committed matrix of three passing voice runs for each of the five required AssemblyAI scenarios. The HTTPS text demo is deployed at https://voiceops-sentinel.onrender.com and its five-scenario API smoke passes. Hosted voice configuration and verification remain incomplete.
+Current status: the HTTPS demo is live at https://voiceops-sentinel.onrender.com with AssemblyAI voice enabled. The project includes five synthetic scenarios, deterministic diagnosis, text fallback, independent evidence validation, browser evaluation capture, hosted control checks, and a committed matrix of three passing voice runs for each scenario.
+
+## Submission assets
+
+- Live application: https://voiceops-sentinel.onrender.com
+- Pitch deck: [`artifacts/submission/VoiceOps-Sentinel-Pitch-Deck.pdf`](artifacts/submission/VoiceOps-Sentinel-Pitch-Deck.pdf)
+- Editable deck: [`artifacts/submission/VoiceOps-Sentinel-Pitch-Deck.pptx`](artifacts/submission/VoiceOps-Sentinel-Pitch-Deck.pptx)
+- Cover image: [`artifacts/submission/VoiceOps-Sentinel-Cover.png`](artifacts/submission/VoiceOps-Sentinel-Cover.png)
+- Demo script: [`docs/submission-script.md`](docs/submission-script.md)
 
 ## Run locally
 
@@ -40,15 +48,16 @@ The committed formal live matrix contains 15 passing AssemblyAI voice runs: thre
 npm run evaluate:live -- path/to/export-one.json path/to/export-two.json
 ```
 
-The merger accepts only cleanly ended runs with a successful tool call, the expected status and cause, and all three canonical validation flags. It deduplicates overlapping exports by `evaluationId` before selecting three runs per scenario; captures without an ID are excluded. The current matrix reports 8.85 ms average server tool latency and 10.6 ms p95 across the selected runs; these figures do not represent full conversational latency.
+The merger accepts only cleanly ended runs with a successful tool call, the expected status and cause, and all three canonical validation flags. It deduplicates overlapping exports by `evaluationId` before selecting three runs per scenario; captures without an ID are excluded. The current hosted matrix reports 85.79 ms average server tool latency and 93.7 ms p95 across the selected runs; these figures measure the tool request only, not full conversational latency.
 
-## Next milestones
+## Submission status
 
-Render deployment is prepared in `render.yaml`; follow [the deployment guide](docs/render-deployment.md). The initial Free service runs text mode until hosted checks and server-secret configuration are complete.
+The application, hosted voice checks, evaluation evidence, pitch deck, PDF, cover image, repository materials, and recording script are complete. The remaining submission task is to record and upload the final demonstration video, then attach its URL in the lablab.ai submission form.
 
-1. Local post-fix voice smoke completed: five captured runs, one per required scenario, passed tool, report-validation, and clean-end checks. See [the smoke review](artifacts/evaluations/post-fix-smoke-2026-09-20.md). The export does not measure perceived audio quality or hardware microphone release.
-2. Verify the demo-session, rate, concurrency, daily-budget, and kill-switch controls in the hosted environment.
-3. Refresh the five-scenario live matrix after hosted verification and preserve the exported captures.
-4. Deploy an HTTPS fixture demo, then prepare the public repository, video, pitch deck, and cover image.
+Hosted checks verified two concurrent voice reservations, rejection of the third, voice request rate limiting, and the investigation limit. Daily-budget enforcement has local test coverage; the counter is process memory and resets when the Render instance restarts.
 
 See [the architecture plan](docs/architecture-plan.md), [API contract](docs/api.md), [decisions](docs/decisions.md), [hackathon review](docs/hackathon.md), and [reuse audit](docs/reuse-audit.md).
+
+## License
+
+Released under the [MIT License](LICENSE).

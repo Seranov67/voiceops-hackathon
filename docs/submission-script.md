@@ -39,7 +39,6 @@ Close on the application URL and project name. Export completed voice captures a
 ## Submission preparation still required
 
 - Actual recorded video, reviewed for audio intelligibility and absence of secrets.
-- PDF pitch deck and cover image.
-- Verify public GitHub access and a license chosen by the project owner.
-- Check the event's final submission form and precise deadline.
-- Record the in-memory quota limitation: restart resets the token counter; it is not a durable spending cap.
+- Upload the video and add its URL to the lablab.ai submission form.
+
+The PDF pitch deck, editable deck, cover image, MIT license, hosted evaluation evidence, and submission copy are complete. The in-memory quota limitation is documented in the README and deck.
