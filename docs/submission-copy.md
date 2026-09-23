@@ -11,6 +11,7 @@ A voice SRE assistant that investigates nginx 502 errors and shows the exact evi
 ## Short description
 
 VoiceOps Sentinel lets an on-call engineer ask aloud why nginx is returning 502 errors. AssemblyAI handles the live voice session, while a constrained read-only backend investigates a controlled scenario and returns a canonical report with exact log evidence, provenance, and independent validation.
+The demo displays each exact record alongside the finding, the heuristic confidence score and its limits, and separate schema, provenance, and policy checks.
 
 ## Full description
 

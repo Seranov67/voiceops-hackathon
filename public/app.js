@@ -1,7 +1,7 @@
 const $ = id => document.getElementById(id);
 const ui = {
   voice: $('voice'), stop: $('stop'), scenario: $('scenario'), status: $('status'),
-  transcript: $('transcript'), report: $('report'), form: $('text-form'),
+  transcript: $('transcript'), report: $('report'), finding: $('finding'), form: $('text-form'),
   evaluation: $('evaluation'), export: $('export')
 };
 
@@ -22,6 +22,40 @@ let sessionRequest, activeRun, voiceTimer, leaseRelease;
 const playbackSources = new Set();
 
 const setStatus = (text, error = false) => { ui.status.textContent = text; ui.status.className = error ? 'error' : ''; };
+const addText = (parent, tag, text, className) => {
+  const element = document.createElement(tag);
+  element.textContent = text;
+  if (className) element.className = className;
+  parent.append(element);
+  return element;
+};
+function renderReport(report) {
+  ui.report.textContent = JSON.stringify(report, null, 2);
+  ui.finding.replaceChildren();
+  const titles = {
+    incident: 'Probable cause found', no_incident_observed: 'No incident observed in this window',
+    insufficient_evidence: 'Cause remains unknown', source_unavailable: 'Log source unavailable'
+  };
+  const causes = { upstream_connection_refused: 'Upstream connection refused', upstream_timeout: 'Upstream timeout' };
+  addText(ui.finding, 'p', `${report.source === 'fixtures' ? 'SYNTHETIC FIXTURE' : report.source} · READ ONLY`, 'finding-kicker');
+  addText(ui.finding, 'h3', titles[report.status] || report.status);
+  addText(ui.finding, 'p', report.summary, 'finding-summary');
+  if (report.probable_cause && report.probable_cause !== 'unknown') addText(ui.finding, 'p', `Probable cause: ${causes[report.probable_cause] || report.probable_cause}`);
+  const confidence = Number.isFinite(report.confidence) ? `${Math.round(report.confidence * 100)}% heuristic score` : 'No score available';
+  addText(ui.finding, 'p', `${confidence} · This score is a rule score, not a measured probability.`, 'finding-caveat');
+  addText(ui.finding, 'h4', 'Exact source records');
+  if (!report.evidence?.length) addText(ui.finding, 'p', 'No records returned. The cause cannot be determined from this window.');
+  for (const record of report.evidence || []) {
+    const item = document.createElement('div'); item.className = 'evidence-record';
+    addText(item, 'p', `${record.id} · ${record.ts}`, 'evidence-meta');
+    addText(item, 'code', record.line);
+    ui.finding.append(item);
+  }
+  const checks = report.validation || {};
+  addText(ui.finding, 'p', `Validation: schema ${checks.schema ? 'pass' : 'fail'} · provenance ${checks.provenance ? 'pass' : 'fail'} · policy ${checks.policy ? 'pass' : 'fail'}`, 'finding-validation');
+  if (report.recommended_actions?.length) addText(ui.finding, 'p', `Read-only next step: ${report.recommended_actions.join('; ')}`);
+  addText(ui.finding, 'p', `Limits: ${(report.limitations || []).join('; ')}. A checked window is not a whole-system health claim.`, 'finding-caveat');
+}
 const addTranscript = (role, text) => {
   if (ui.transcript.textContent === 'No messages yet.') ui.transcript.textContent = '';
   ui.transcript.textContent += `${role === 'agent' ? 'VoiceOps' : 'You'}: ${text}\n`;
@@ -56,7 +90,7 @@ async function investigate(callId, scenario = ui.scenario.value, render = true) 
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Investigation failed');
-  if (render) ui.report.textContent = JSON.stringify(data, null, 2);
+  if (render) renderReport(data);
   return data;
 }
 
@@ -104,7 +138,7 @@ async function flushTools() {
     try {
       const report = await investigate(call.call_id, evaluation.scenario, false);
       if (ws !== socket || socket.readyState !== WebSocket.OPEN) return;
-      ui.report.textContent = JSON.stringify(report, null, 2);
+      renderReport(report);
       if (currentEvaluation === evaluation) {
         evaluation.tool = { called: true, success: true, latencyMs: performance.now() - started };
         evaluation.report = {

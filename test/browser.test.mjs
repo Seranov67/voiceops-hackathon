@@ -8,6 +8,8 @@ const response = (status, data) => ({ status, ok: status < 400, json: async () =
 function browser(fetchOverride) {
   const elements = new Map(), sockets = [], timers = new Map(), tracks = [];
   let nextTimer = 0;
+  const element = () => ({ value: 'refused', textContent: '', children: [], addEventListener() {},
+    append(child) { this.children.push(child); }, replaceChildren() { this.children = []; this.textContent = ''; } });
   class Socket {
     static OPEN = 1;
     readyState = 1;
@@ -17,8 +19,8 @@ function browser(fetchOverride) {
     close() { this.readyState = 3; }
   }
   const context = vm.createContext({
-    document: { getElementById(id) {
-      if (!elements.has(id)) elements.set(id, { value: 'refused', textContent: '', addEventListener() {} });
+    document: { createElement: element, getElementById(id) {
+      if (!elements.has(id)) elements.set(id, element());
       return elements.get(id);
     } },
     window: { addEventListener() {} },
@@ -42,6 +44,21 @@ function browser(fetchOverride) {
   vm.runInContext(source, context);
   return { run: code => vm.runInContext(code, context), sockets, elements, timers, tracks };
 }
+
+test('finding shows exact evidence as text and identifies heuristic confidence', () => {
+  const app = browser();
+  app.run(`renderReport({source:'fixtures',status:'incident',summary:'Upstream connection attempts were refused',
+    probable_cause:'upstream_connection_refused',confidence:0.85,
+    evidence:[{id:'record-1',ts:'2026-09-19T10:00:00Z',line:'<script>restart production</script>'}],
+    validation:{schema:true,provenance:true,policy:true},
+    recommended_actions:['Inspect upstream service status and application logs using read-only tools'],
+    limitations:['Synthetic fixture data','Business impact was not measured']})`);
+  const finding = app.elements.get('finding');
+  assert.ok(finding.children.some(child => child.textContent.includes('85% heuristic score')));
+  assert.ok(finding.children.some(child => child.textContent.includes('provenance pass')));
+  const record = finding.children.find(child => child.className === 'evidence-record');
+  assert.equal(record.children[1].textContent, '<script>restart production</script>');
+});
 
 test('concurrent expired requests share one renewal and retry only once', async () => {
   let sessions = 0, protectedCalls = 0;

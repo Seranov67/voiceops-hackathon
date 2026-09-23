@@ -7,6 +7,6 @@
 <form id="text-form"><label for="question">Text fallback</label><input id="question" value="Why is nginx returning 502 errors?" maxlength="300"><button>Investigate</button></form>
 <p id="status" role="status">Ready. Text mode works without an API key.</p></section>
 <section><h2>Transcript</h2><div id="transcript" class="panel" aria-live="polite">No messages yet.</div></section>
-<section><h2>Canonical incident report</h2><pre id="report">Run a voice or text investigation.</pre></section>
+<section><h2>Evidence-backed finding</h2><div id="finding" class="finding panel" aria-live="polite"><p>Run a voice or text investigation to see the finding and its evidence.</p></div><details class="raw-report"><summary>Canonical incident report (JSON)</summary><pre id="report">Run a voice or text investigation.</pre></details></section>
 <section><div class="section-heading"><h2>Live evaluation capture</h2><button id="export" disabled>Export JSON</button></div><pre id="evaluation">Complete a voice session to capture provider events, transcript, tool latency, validation flags, and clean-end status.</pre></section>
 <p class="note">Fixture mode · read-only · no production data. The server-side baseline produces the diagnosis.</p></main><script type="module" src="/app.js"></script></html>
